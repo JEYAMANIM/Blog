@@ -8,11 +8,25 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, String, Text
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 
-DATABASE_URL = "postgresql://neondb_owner:npg_4VqLTHWCsX9g@ep-spring-scene-ber1gwpw-pooler.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DATABASE_URL = (
+    "postgresql://neondb_owner:npg_4VqLTHWCsX9g@"
+    "ep-spring-scene-ber1gwpw-pooler.c-9.us-east-2.aws.neon.tech/"
+    "neondb?sslmode=require&channel_binding=require"
+)
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+# Resilient pool settings for Neon serverless PostgreSQL
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,              # Checks if the connection is alive before every query
+    pool_recycle=280,                # Recycles connections before Neon's ~5 min idle timeout
+    pool_size=5,
+    max_overflow=10,
+    connect_args={"connect_timeout": 10},
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 class Blog(Base):
     __tablename__ = "blogs"
@@ -21,6 +35,7 @@ class Blog(Base):
     description = Column(Text)
     content = Column(Text)
     image_url = Column(String(500))
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -37,11 +52,13 @@ app.add_middleware(
 os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+
 class BlogCreate(BaseModel):
     title: str
     description: str
     content: str
     image_url: str
+
 
 def get_db():
     db = SessionLocal()
@@ -49,6 +66,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
@@ -59,10 +77,16 @@ async def upload_image(file: UploadFile = File(...)):
     file_url = f"http://localhost:8000/uploads/{file.filename}"
     return {"image_url": file_url}
 
+
 @app.post("/blogs/")
 def create_blog(blog: BlogCreate, db: Session = Depends(get_db)):
     def generate_ip_id():
-        return f"{random.randint(1, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(1, 255)}"
+        return (
+            f"{random.randint(1, 255)}."
+            f"{random.randint(0, 255)}."
+            f"{random.randint(0, 255)}."
+            f"{random.randint(1, 255)}"
+        )
 
     new_id = generate_ip_id()
     while db.query(Blog).filter(Blog.id == new_id).first() is not None:
@@ -73,7 +97,7 @@ def create_blog(blog: BlogCreate, db: Session = Depends(get_db)):
         title=blog.title,
         description=blog.description,
         content=blog.content,
-        image_url=blog.image_url
+        image_url=blog.image_url,
     )
 
     db.add(db_blog)
@@ -85,11 +109,12 @@ def create_blog(blog: BlogCreate, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=400, detail="Error saving the blog post.")
 
+
 @app.get("/blogs/")
 def get_blogs(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     return (
         db.query(Blog)
@@ -98,6 +123,7 @@ def get_blogs(
         .limit(limit)
         .all()
     )
+
 
 @app.get("/blogs/{blog_id}")
 def get_blog(blog_id: str, db: Session = Depends(get_db)):
