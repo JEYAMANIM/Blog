@@ -46,3 +46,4 @@ uvicorn main:app --reload --port 8000
 ## Deployment
 - **Frontend**: Hosted on [Cloudflare Pages](https://pages.cloudflare.com/)
 - **Database**: [Neon Tech Serverless PostgreSQL](https://neon.tech/)
+

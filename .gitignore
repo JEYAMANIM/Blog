@@ -24,8 +24,7 @@ dist-ssr/
 !.env.example
 
 # Uploads
-backend/uploads/*
-!backend/uploads/.gitkeep
+# backend/uploads/ are tracked
 
 # Logs
 *.log
