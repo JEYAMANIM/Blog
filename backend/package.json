@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "fastapi": "^0.0.8",
+    "psycopg2-binary": "^0.0.1",
+    "pydantic": "^0.0.1-security",
+    "pymysql": "^1.0.0",
+    "sqlalchemy": "^10.1.1",
+    "uvicorn": "^0.0.1-security"
+  }
+}
