@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_URL } from "../config";
 
-
 interface Blog {
     id: string;
     title: string;
@@ -52,15 +51,12 @@ export default function BlogDetail() {
         );
     }
 
-    // Strip non-breaking spaces and pasted inline styles so text wraps properly
     const cleanContent = blog.content
         .replace(/&nbsp;|\u00A0/g, " ")
         .replace(/\sstyle=(["']).*?\1/gi, "");
 
     return (
         <div className="min-h-screen w-full overflow-x-hidden bg-[#0B0F19] text-slate-200 font-sans pb-24">
-
-            {/* Top Navigation */}
             <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 w-full">
                 <Link
                     to="/"
@@ -70,7 +66,6 @@ export default function BlogDetail() {
                 </Link>
             </div>
 
-            {/* Hero Section */}
             <div className="max-w-5xl mx-auto px-4 sm:px-6 w-full flex flex-col lg:flex-row gap-12 items-center mb-16">
                 <div className="flex-1 w-full">
                     <span className="text-xs font-semibold text-indigo-400 bg-indigo-900/40 px-3 py-1.5 rounded-full border border-indigo-400/20 mb-6 inline-block tracking-wide uppercase">
@@ -83,7 +78,6 @@ export default function BlogDetail() {
                         {blog.description}
                     </p>
 
-                    {/* Metadata */}
                     <div className="flex items-center gap-4 text-sm text-slate-500 border-t border-slate-800/80 pt-6">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
@@ -99,7 +93,6 @@ export default function BlogDetail() {
                     </div>
                 </div>
 
-                {/* Hero Image */}
                 {blog.image_url && (
                     <div className="lg:w-5/12 w-full shrink-0">
                         <div className="rounded-3xl overflow-hidden border border-slate-800 shadow-2xl shadow-indigo-500/10">
@@ -113,7 +106,6 @@ export default function BlogDetail() {
                 )}
             </div>
 
-            {/* Main Article Content */}
             <div className="max-w-3xl mx-auto px-4 sm:px-6 w-full">
                 <div
                     className="prose prose-invert prose-lg prose-indigo max-w-none w-full

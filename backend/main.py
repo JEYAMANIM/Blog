@@ -80,7 +80,6 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Preserve https:// when running behind Render/cloud proxies
     scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
     host = request.headers.get("host", request.url.netloc)
     file_url = f"{scheme}://{host}/uploads/{safe_name}"
