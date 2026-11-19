@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { API_URL } from "../config";
+
 
 interface Blog {
     id: string;
@@ -18,7 +19,7 @@ export default function BlogDetail() {
     useEffect(() => {
         const fetchBlog = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/blogs/${id}`);
+                const response = await fetch(`${API_URL}/blogs/${id}`);
                 if (response.ok) {
                     const data = await response.json();
                     setBlog(data);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { API_URL } from "../config";
 
 interface Blog {
     id: string;
@@ -16,7 +16,7 @@ export default function BlogList() {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/blogs/`);
+                const response = await fetch(`${API_URL}/blogs/`);
                 const data = await response.json();
                 setBlogs(data);
             } catch (error) {

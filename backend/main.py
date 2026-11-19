@@ -1,24 +1,24 @@
 import os
 import shutil
 import random
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, String, Text
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 
-DATABASE_URL = (
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
     "postgresql://neondb_owner:npg_4VqLTHWCsX9g@"
     "ep-spring-scene-ber1gwpw-pooler.c-9.us-east-2.aws.neon.tech/"
-    "neondb?sslmode=require&channel_binding=require"
+    "neondb?sslmode=require&channel_binding=require",
 )
 
-# Resilient pool settings for Neon serverless PostgreSQL
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,              # Checks if the connection is alive before every query
-    pool_recycle=280,                # Recycles connections before Neon's ~5 min idle timeout
+    pool_pre_ping=True,
+    pool_recycle=280,
     pool_size=5,
     max_overflow=10,
     connect_args={"connect_timeout": 10},
@@ -43,7 +43,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://blog-editor-4uh.pages.dev",
+    ],
+    allow_origin_regex=r"https://.*\.blog-editor-4uh\.pages\.dev",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,12 +73,18 @@ def get_db():
 
 
 @app.post("/upload-image/")
-async def upload_image(file: UploadFile = File(...)):
-    file_path = f"uploads/{file.filename}"
+async def upload_image(request: Request, file: UploadFile = File(...)):
+    safe_name = file.filename.replace(" ", "_")
+    file_path = f"uploads/{safe_name}"
+
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    file_url = f"http://localhost:8000/uploads/{file.filename}"
+    # Preserve https:// when running behind Render/cloud proxies
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("host", request.url.netloc)
+    file_url = f"{scheme}://{host}/uploads/{safe_name}"
+
     return {"image_url": file_url}
 
 
