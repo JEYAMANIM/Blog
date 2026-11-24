@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_URL } from "../config";
 import { INITIAL_BLOGS, type Blog } from "../data/initialBlogs";
+import { getDisplayImageUrl } from "../utils/imageUrl";
 
 export default function BlogDetail() {
     const { id } = useParams();
@@ -118,14 +119,20 @@ export default function BlogDetail() {
                             <div className="lg:w-5/12 w-full shrink-0">
                                 <div className="rounded-3xl overflow-hidden border border-slate-800 shadow-2xl shadow-indigo-500/10 bg-slate-900 aspect-video lg:aspect-square">
                                     <img
-                                        src={blog.image_url}
+                                        src={getDisplayImageUrl(blog.image_url)}
                                         alt={`Hero illustration for ${blog.title}`}
                                         width="600"
                                         height="600"
                                         loading="lazy"
                                         decoding="async"
                                         onError={(e) => {
-                                            e.currentTarget.style.display = "none";
+                                            const img = e.currentTarget;
+                                            if (!img.dataset.fallback && blog.image_url) {
+                                                img.dataset.fallback = "true";
+                                                img.src = blog.image_url;
+                                                return;
+                                            }
+                                            img.style.display = "none";
                                         }}
                                         className="w-full h-full object-cover"
                                     />

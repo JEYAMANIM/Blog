@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { API_URL } from "../config";
 import { INITIAL_BLOGS, type Blog } from "../data/initialBlogs";
+import { getDisplayImageUrl } from "../utils/imageUrl";
 
 export default function BlogList() {
     const [blogs, setBlogs] = useState<Blog[]>(INITIAL_BLOGS);
@@ -84,7 +85,7 @@ export default function BlogList() {
                                         <div className="h-48 w-full bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 overflow-hidden relative">
                                             {blog.image_url ? (
                                                 <img
-                                                    src={blog.image_url}
+                                                    src={getDisplayImageUrl(blog.image_url)}
                                                     alt=""
                                                     aria-hidden="true"
                                                     width="400"
@@ -92,8 +93,13 @@ export default function BlogList() {
                                                     loading="lazy"
                                                     decoding="async"
                                                     onError={(e) => {
-                                                        // Gracefully fallback to background gradient on image error
-                                                        e.currentTarget.style.display = "none";
+                                                        const img = e.currentTarget;
+                                                        if (!img.dataset.fallback && blog.image_url) {
+                                                            img.dataset.fallback = "true";
+                                                            img.src = blog.image_url;
+                                                            return;
+                                                        }
+                                                        img.style.display = "none";
                                                     }}
                                                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                                                 />
