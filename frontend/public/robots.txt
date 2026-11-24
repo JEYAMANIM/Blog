@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://blog-editor-4uh.pages.dev/sitemap.xml
+
