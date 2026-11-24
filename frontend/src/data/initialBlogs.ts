@@ -37,3 +37,4 @@ export const INITIAL_BLOGS: Blog[] = [
         image_url: "https://blog-un30.onrender.com/uploads/Gemini_Generated_Image_5kmbr25kmbr25kmb.png",
     },
 ];
+
