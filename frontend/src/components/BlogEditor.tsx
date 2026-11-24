@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ReactQuill from "react-quill-new";
+import { Link } from "react-router-dom";
 import "react-quill-new/dist/quill.snow.css";
 import { API_URL } from "../config";
 
@@ -21,6 +22,7 @@ export default function BlogEditor() {
     });
 
     const [isUploading, setIsUploading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -52,6 +54,7 @@ export default function BlogEditor() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             const response = await fetch(`${API_URL}/blogs/`, {
                 method: "POST",
@@ -69,75 +72,110 @@ export default function BlogEditor() {
         } catch (error) {
             console.error("Error saving blog:", error);
             alert("Network error while saving blog.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-8 mt-12 bg-white/10 backdrop-blur-lg rounded-2xl border border-gray-200 shadow-xl">
-            <h2 className="text-3xl font-bold mb-8 text-gray-800">Create New Post</h2>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-                <input
-                    type="text"
-                    placeholder="Main Blog Title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-lg"
-                    required
-                />
-
-                <textarea
-                    placeholder="Write a few lines describing this blog post..."
-                    rows={3}
-                    value={formData.description}
-                    onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                    required
-                />
-
-                <div className="w-full p-4 rounded-xl border border-gray-300 bg-white">
-                    <label className="block text-sm text-gray-500 mb-2 font-semibold">
-                        Upload Hero Image
-                    </label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="w-full outline-none file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
-                    />
-                    {isUploading && (
-                        <p className="text-sm text-blue-600 mt-2 font-medium">
-                            Uploading to server...
-                        </p>
-                    )}
-                    {formData.image_url && (
-                        <p className="text-sm text-green-600 mt-2 font-medium break-all">
-                            Image successfully attached: {formData.image_url}
-                        </p>
-                    )}
-                </div>
-
-                <div className="bg-white rounded-xl overflow-hidden border border-gray-300">
-                    <ReactQuill
-                        theme="snow"
-                        modules={quillModules}
-                        value={formData.content}
-                        onChange={(content) => setFormData({ ...formData, content })}
-                        className="h-72 mb-12"
-                        placeholder="Write your subtitles (using H2/H3 in the toolbar) and paragraphs here..."
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={isUploading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-4 rounded-xl transition-colors shadow-md hover:shadow-lg"
+        <main id="main-content" className="max-w-4xl mx-auto px-4 sm:px-8 py-6">
+            <nav aria-label="Breadcrumb" className="mb-6">
+                <Link
+                    to="/"
+                    aria-label="Back to all articles"
+                    className="inline-flex items-center gap-2 min-h-[44px] text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
                 >
-                    {isUploading ? "Waiting for image upload..." : "Publish Post"}
-                </button>
-            </form>
-        </div>
+                    <span aria-hidden="true">←</span>
+                    <span>Back to Articles</span>
+                </Link>
+            </nav>
+
+            <div className="bg-white p-6 sm:p-10 rounded-2xl border border-gray-200 shadow-xl">
+                <header className="mb-8">
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create New Post</h1>
+                    <p className="text-gray-600 text-sm mt-1">Publish insightful engineering articles to the blog.</p>
+                </header>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label htmlFor="blog-title" className="block text-sm font-semibold text-gray-800 mb-2">
+                            Post Title <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="blog-title"
+                            type="text"
+                            placeholder="e.g. Architecting Scalable AI Microservices"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            className="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-bold text-lg text-gray-900"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="blog-description" className="block text-sm font-semibold text-gray-800 mb-2">
+                            Short Summary / Description <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            id="blog-description"
+                            placeholder="A concise, 1-2 sentence preview for search engines and social cards..."
+                            rows={3}
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none text-gray-900 leading-relaxed"
+                            required
+                        />
+                    </div>
+
+                    <div className="w-full p-5 rounded-xl border border-gray-300 bg-gray-50/50">
+                        <label htmlFor="hero-image-upload" className="block text-sm font-semibold text-gray-800 mb-2">
+                            Hero Image (Optional)
+                        </label>
+                        <input
+                            id="hero-image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            aria-describedby="upload-status"
+                            className="w-full outline-none file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all cursor-pointer"
+                        />
+                        <div id="upload-status" className="mt-2 text-sm" role="status" aria-live="polite">
+                            {isUploading && (
+                                <p className="text-indigo-600 font-medium">Uploading image to server...</p>
+                            )}
+                            {formData.image_url && (
+                                <p className="text-green-700 font-medium break-all">
+                                    ✓ Image attached: {formData.image_url}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label id="content-editor-label" className="block text-sm font-semibold text-gray-800 mb-2">
+                            Article Body <span className="text-red-500">*</span>
+                        </label>
+                        <div className="bg-white rounded-xl overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-indigo-500" aria-labelledby="content-editor-label">
+                            <ReactQuill
+                                theme="snow"
+                                modules={quillModules}
+                                value={formData.content}
+                                onChange={(content) => setFormData({ ...formData, content })}
+                                className="h-72 mb-12"
+                                placeholder="Write your headings (H2/H3 in the toolbar) and detailed article content..."
+                            />
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={isUploading || isSubmitting}
+                        className="w-full min-h-[48px] bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                    >
+                        {isUploading ? "Uploading Image..." : isSubmitting ? "Publishing Post..." : "Publish Post"}
+                    </button>
+                </form>
+            </div>
+        </main>
     );
 }
