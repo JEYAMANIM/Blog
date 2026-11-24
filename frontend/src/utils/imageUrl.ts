@@ -9,3 +9,4 @@ export function getDisplayImageUrl(url?: string): string {
     }
     return url;
 }
+
